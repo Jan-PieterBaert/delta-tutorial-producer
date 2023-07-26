@@ -27,7 +27,7 @@ services:
   virtuoso:
     image: redpencil/virtuoso:1.0.0
     ports:
-      - "8890:8890"
+      - "8889:8890"
     environment:
       SPARQL_UPDATE: "true"
       DEFAULT_GRAPH: "http://mu.semte.ch/application"
@@ -91,6 +91,8 @@ services:
     image: semtech/mu-file-service:3.3.0
     environment:
       MU_APPLICATION_GRAPH: "http://mu.semte.ch/graphs/books"
+    links:
+      - virtuoso:database
     volumes:
       - ./data/files:/share
     labels:

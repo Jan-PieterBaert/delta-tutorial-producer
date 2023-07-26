@@ -1,0 +1,27 @@
+{
+  "books": {
+    "deltaInterval": 10000,
+    "deltaPath": "/books/delta",
+    "errorCreatorUri": "http://lblod.data.gift/services/delta-producer-publication-graph-maintainer-books",
+    "errorGraph": "http://mu.semte.ch/graphs/books",
+    "exportConfigPath": "/config/books/export.json",
+    "filesGraph": "http://mu.semte.ch/graphs/books",
+    "filesPath": "/books/files",
+    "healingJobOperation": "http://redpencil.data.gift/id/jobs/concept/JobOperation/deltas/healingOperation/books",
+    "initialPublicationGraphSyncJobOperation": "http://redpencil.data.gift/id/jobs/concept/JobOperation/deltas/initialPublicationGraphSyncing/books",
+    "jobsGraph": "http://mu.semte.ch/graphs/books",
+    "loginPath": "/books/login",
+    "publicationGraph": "http://redpencil.data.gift/id/deltas/producer/books-producer",
+    "publisherUri": "http://data.lblod.info/services/delta-production-json-diff-file-manager-books",
+    "queuePollInterval": 3000,
+    "relativeFilePath": "deltas/books",
+    "serveDeltaFiles": true,
+    "skipMuAuthInitialSync": true,
+    "skipMuAuthHealing": true,
+    "useFileDiff": false,
+    "healingInitialBatchSizeInsert": 1000,
+    "useVirtuosoForExpensiveSelects": true,
+    "waitForInitialSync": true,
+    "logOutgoingDelta": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "export": [
+    {
+      "type": "http://schema.org/Book",
+      "graphsFilter": [ "http://mu.semte.ch/application" ],
+      "properties": [
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://mu.semte.ch/vocabularies/core/uuid",
+        "http://schema.org/name",
+        "http://schema.org/isbn"
+      ]
+    }
+  ]
+}
