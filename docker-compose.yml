@@ -1,8 +1,17 @@
-version: '3.4'
+version: '3.7'
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   identifier:
     image: semtech/mu-identifier:1.9.1
+    environment:
+      DEFAULT_MU_AUTH_ALLOWED_GROUPS_HEADER: '[{"variables":[],"name":"books"}, {"variables":[],"name":"clean"}]'
+      DEFAULT_ACCESS_CONTROL_ALLOW_ORIGIN_HEADER: "*"
     links:
       - dispatcher:dispatcher
     ports:
@@ -12,23 +21,138 @@ services:
     links:
       - books:books
       - frontend_books:frontend_books
+      - database:database
     volumes:
       - ./config/dispatcher:/config
-  database:
+  virtuoso:
     image: redpencil/virtuoso:1.0.0
+    ports:
+      - "8890:8890"
     environment:
       SPARQL_UPDATE: "true"
       DEFAULT_GRAPH: "http://mu.semte.ch/application"
     volumes:
       - ./data/db:/data
       - ./config/virtuoso/virtuoso.ini:/data/virtuoso.ini
+  database:
+    image: semtech/mu-authorization:0.6.0-beta.8
+    environment:
+      MU_SPARQL_ENDPOINT: "http://virtuoso:8890/sparql"
+    volumes:
+      - ./config/authorization:/config
+    labels:
+      - "logging=true"
+    restart: always
+    logging: *default-logging
+
 
   books:
     image: madnificent/books-service:2.0.0
     links:
-      - database:database
+      - virtuoso:database
 
   frontend_books:
     image: janpieterbaert/delta-tutorial-books-frontend:producer
     links:
       - books:backend
+
+# step 1: add delta-producer related containers
+  cache:
+    image: semtech/mu-cache:2.0.2
+    links:
+      - resource:backend
+    restart: always
+    labels:
+      - "logging=true"
+    logging: *default-logging
+
+  resource:
+    image: semtech/mu-cl-resources:1.22.2
+    environment:
+      CACHE_CLEAR_PATH: "http://cache/.mu/clear-keys"
+    volumes:
+      - ./config/resources:/config
+    restart: always
+    labels:
+      - "logging=true"
+    logging: *default-logging
+
+  deltanotifier:
+    image: cecemel/delta-notifier:0.2.0-beta.3
+    volumes:
+      - ./config/delta:/config
+    labels:
+      - "logging=true"
+    restart: always
+    logging: *default-logging
+    environment:
+      DEBUG_DELTA_SEND: "true"
+  file:
+    image: semtech/mu-file-service:3.3.0
+    environment:
+      MU_APPLICATION_GRAPH: "http://mu.semte.ch/graphs/books"
+    volumes:
+      - ./data/files:/share
+    labels:
+      - "logging=true"
+    restart: always
+    logging: *default-logging
+
+  job-controller:
+    image: lblod/job-controller-service:1.0.0
+    volumes:
+      - ./config/job-controller:/config
+    labels:
+      - "logging=true"
+    restart: always
+    logging: *default-logging
+
+  scheduled-job-controller:
+    image: lblod/scheduled-job-controller-service:1.0.1
+    environment:
+      LOG_SPARQL_ALL: "false"
+      DEBUG_AUTH_HEADERS: "false"
+    labels:
+      - "logging=true"
+    restart: always
+    logging: *default-logging
+
+  #############################################################################
+  # DELTA GENERAL
+  #############################################################################
+  delta-producer-dump-file-publisher:
+    image: lblod/delta-producer-dump-file-publisher:0.9.1
+    environment:
+      FILES_GRAPH: "http://mu.semte.ch/graphs/books"
+      DCAT_DATASET_GRAPH: "http://mu.semte.ch/graphs/books"
+    volumes:
+      - ./config/delta-producer/dump-file-publisher:/config
+      - ./data/files:/share
+    restart: always
+    logging: *default-logging
+
+  delta-producer-publication-graph-maintainer:
+    # image: lblod/delta-producer-publication-graph-maintainer:1.0.0
+    build: /home/jan-pieter/git_repos/_RedpencilIO/delta-producer-publication-graph-maintainer
+    environment:
+      SUDO_QUERY_RETRY_FOR_HTTP_STATUS_CODES: "404,500,503"
+      MAX_BODY_SIZE: "50mb"
+      PRETTY_PRINT_DIFF_JSON: "true"
+      CONFIG_SERVICES_JSON_PATH: '/config/publication-graph-maintainer/config.json'
+      LOG_INCOMING_DELTA: "true"
+    ports:
+      - "8765:80"
+    volumes:
+      - ./config/delta-producer:/config
+      - ./data/files/:/share
+    restart: always
+    logging: *default-logging
+
+  delta-producer-background-jobs-initiator:
+    image: lblod/delta-producer-background-jobs-initiator:0.5.0
+    volumes:
+      - ./config/delta-producer/background-job-initiator/config.json:/config/config.json
+    labels:
+      - "logging=true"
+    restart: always
+    logging: *default-logging
