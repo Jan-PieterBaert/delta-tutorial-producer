@@ -10,6 +10,7 @@
     "healingJobOperation": "http://redpencil.data.gift/id/jobs/concept/JobOperation/deltas/healingOperation/books",
     "initialPublicationGraphSyncJobOperation": "http://redpencil.data.gift/id/jobs/concept/JobOperation/deltas/initialPublicationGraphSyncing/books",
     "jobsGraph": "http://mu.semte.ch/graphs/books",
+    "key": "GFyx2HuJfCAiAsJQL6AHjOG8sbB97dqZ",
     "loginPath": "/books/login",
     "publicationGraph": "http://redpencil.data.gift/id/deltas/producer/books-producer",
     "publisherUri": "http://data.lblod.info/services/delta-production-json-diff-file-manager-books",

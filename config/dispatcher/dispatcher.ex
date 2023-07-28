@@ -23,10 +23,6 @@ defmodule Dispatcher do
     Proxy.forward conn, path, "http://books/books/"
   end
 
-  match "/boooks/*path" do
-    Proxy.forward conn, path, "http://books/books/"
-  end
-
   match "/authors/*path" do
     Proxy.forward conn, path, "http://books/authors/"
   end
@@ -103,6 +99,10 @@ defmodule Dispatcher do
 
   get "/sync/books/files/*path" do
     Proxy.forward conn, path, "http://delta-producer-publication-graph-maintainer/books/files/"
+  end
+
+  post "/sync/books/login/*path" do
+    Proxy.forward conn, path, "http://delta-producer-publication-graph-maintainer/books/login/"
   end
 
   #################################################################
